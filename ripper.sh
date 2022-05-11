@@ -9,10 +9,10 @@ else
 fi
 
 # Get the client index of Spotify
-spotify=$(pacmd list-sink-inputs | while read line; do
-  [[ -n $(echo $line | grep "index:") ]] && index=$line
+spotify=$(pactl list sink-inputs | while read line; do
+  [[ -n $(echo $line | grep "Sink Input #") ]] && index=$line
   [[ -n $(echo $line | grep Spotify) ]] && echo $index && exit
-done | cut -d: -f2)
+done | cut -d# -f2)
 
 if [[ -z $spotify ]]; then
   echo "Spotify is not running"
@@ -25,7 +25,7 @@ if [[ -z $(pactl list short | grep spotify.monitor) ]]; then
 fi
 
 # Move Spotify sound output back to default at exit
-pasink=$(pactl stat | grep Sink | cut -d: -f2)
+pasink=$(pactl get-default-sink)
 trap 'pactl move-sink-input $spotify $pasink' EXIT
 
 # Move Spotify to its own sink so recorded output will not get corrupted
